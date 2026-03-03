@@ -19,28 +19,39 @@ export const UsernameModal = ({ userId, onComplete }: Props) => {
         setLoading(true);
         setErrorMessage(null);
 
-        const { error } = await supabase
-            .from("profiles")
-            .upsert({
+        try {
+            const newProfile = {
                 id: userId,
                 full_name: name.trim(),
                 avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
                 updated_at: new Date().toISOString()
+            };
+
+            await supabase.from("profiles").upsert(newProfile);
+
+            // ⭐ Instant cache update (NO REFRESH)
+            queryClient.setQueryData(["profile"], (old: any) => {
+                if (!old) return newProfile;
+
+                return {
+                    ...old,
+                    ...newProfile
+                };
             });
 
-        if (error) {
+            await queryClient.invalidateQueries({
+                queryKey: ["profile"],
+                refetchType: "active"
+            });
+
+            setLoading(false);
+            onComplete();
+
+        } catch (err) {
+            console.error(err);
             setErrorMessage("Неуспешен запис.");
             setLoading(false);
-            return;
         }
-
-        // ⭐ Optimistic cache update (CRITICAL FIX)
-        await queryClient.invalidateQueries({
-            queryKey: ["profile"]
-        });
-
-        setLoading(false);
-        onComplete();
     };
 
     return (
