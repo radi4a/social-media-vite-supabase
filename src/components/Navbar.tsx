@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../supabase-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -135,7 +136,8 @@ export const Navbar = () => {
             setPreviewUrl(URL.createObjectURL(file));
         }
     };
-
+    
+    const queryClient = useQueryClient();
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
@@ -169,6 +171,10 @@ export const Navbar = () => {
                 });
 
             if (profileError) throw profileError;
+
+            queryClient.invalidateQueries({
+                predicate: query => query.queryKey[0] === "post"
+            });
 
             const { error: updateError } = await supabase.auth.updateUser({
                 data: {

@@ -55,7 +55,7 @@ export const PostDetail = ({ postId }: Props) => {
 
 
     const { data, isPending, error } = useQuery<Post, Error>({
-        queryKey: ["post", postId],
+        queryKey: ["post", postId, "profile"],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("posts")
@@ -69,6 +69,8 @@ export const PostDetail = ({ postId }: Props) => {
                 avatar_url: data.profiles?.avatar_url
             } as Post;
         },
+        staleTime: 0,
+        gcTime: 0
     });
 
     const [isEditOpen, setIsEditOpen] = useState(false);
