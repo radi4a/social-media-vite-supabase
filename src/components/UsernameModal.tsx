@@ -35,13 +35,8 @@ export const UsernameModal = ({ userId, onComplete }: Props) => {
         }
 
         // ⭐ Optimistic cache update (CRITICAL FIX)
-        queryClient.setQueryData(["profile"], (old: any) => {
-            if (!old) return old;
-
-            return {
-                ...old,
-                full_name: name.trim()
-            };
+        await queryClient.invalidateQueries({
+            queryKey: ["profile"]
         });
 
         setLoading(false);
