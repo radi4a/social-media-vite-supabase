@@ -55,14 +55,16 @@ export const PostDetail = ({ postId }: Props) => {
 
 
     const { data, isPending, error } = useQuery<Post, Error>({
-        queryKey: ["post", postId, "profile"],
+        queryKey: ["post", postId],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("posts")
                 .select(`*, profiles (full_name, avatar_url, bio, role)`)
                 .eq("id", postId)
                 .single();
+
             if (error) throw error;
+
             return {
                 ...data,
                 author_name: data.profiles?.full_name || "Анонимен",
@@ -70,7 +72,9 @@ export const PostDetail = ({ postId }: Props) => {
             } as Post;
         },
         staleTime: 0,
-        gcTime: 0
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true
     });
 
     const [isEditOpen, setIsEditOpen] = useState(false);

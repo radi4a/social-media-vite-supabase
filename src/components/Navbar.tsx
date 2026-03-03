@@ -173,9 +173,9 @@ export const Navbar = () => {
             if (profileError) throw profileError;
 
             queryClient.invalidateQueries({
-                predicate: query => query.queryKey[0] === "post"
+                queryKey: ["post"],
+                exact: false
             });
-
             const { error: updateError } = await supabase.auth.updateUser({
                 data: {
                     full_name: localName,
