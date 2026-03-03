@@ -5,6 +5,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { useAuth } from "../context/AuthContext";
 import { LikeButton } from "./LikeButton";
 import { CommentSection } from "./CommentSection";
+import { useNavigate } from "react-router";
 
 interface Props {
     postId: number;
@@ -77,6 +78,7 @@ export const PostDetail = ({ postId }: Props) => {
     const [content, setContent] = useState("");
     const [previews, setPreviews] = useState<string[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -146,7 +148,7 @@ export const PostDetail = ({ postId }: Props) => {
             alert(error.message);
         } else {
             queryClient.invalidateQueries({ queryKey: ["posts"] });
-            window.location.href = "/";
+            navigate("/");
         }
     };
 
