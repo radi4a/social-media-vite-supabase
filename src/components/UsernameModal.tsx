@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../supabase-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
     userId: string;
@@ -10,6 +11,7 @@ export const UsernameModal = ({ userId, onComplete }: Props) => {
     const [name, setName] = useState("");
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
     const handleSave = async () => {
         if (!name.trim()) return;
@@ -27,16 +29,23 @@ export const UsernameModal = ({ userId, onComplete }: Props) => {
             });
 
         if (error) {
-            console.error("Грешка при запис:", error);
-            setErrorMessage("Неуспешен запис. Моля, опитайте отново.");
+            setErrorMessage("Неуспешен запис.");
             setLoading(false);
-        } else {
-            setLoading(false);
-            onComplete();
-
-            // ТАЗИ ЛИНИЯ ОПРАВЯ ПРОБЛЕМА:
-            window.location.reload();
+            return;
         }
+
+        // ⭐ Optimistic cache update (CRITICAL FIX)
+        queryClient.setQueryData(["profile"], (old: any) => {
+            if (!old) return old;
+
+            return {
+                ...old,
+                full_name: name.trim()
+            };
+        });
+
+        setLoading(false);
+        onComplete();
     };
 
     return (
