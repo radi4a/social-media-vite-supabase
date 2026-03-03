@@ -24,30 +24,38 @@ export const UsernameModal = ({ userId, onComplete }: Props) => {
                 id: userId,
                 full_name: name.trim(),
                 avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+                bio: "",
                 updated_at: new Date().toISOString()
             };
 
             await supabase.from("profiles").upsert(newProfile);
 
-            // ⭐ Instant cache update (NO REFRESH)
+            // ✅ Instant cache update (VERY IMPORTANT)
             queryClient.setQueryData(["profile"], (old: any) => {
-                if (!old) return newProfile;
-
                 return {
-                    ...old,
+                    ...(old || {}),
                     ...newProfile
                 };
             });
 
+            // ✅ Invalidate ALL profile + post related queries
             await queryClient.invalidateQueries({
-                queryKey: ["profile"],
-                refetchType: "active"
+                predicate: (query) => {
+                    if (!Array.isArray(query.queryKey)) return false;
+
+                    return (
+                        query.queryKey[0] === "profile" ||
+                        query.queryKey[0] === "post" ||
+                        query.queryKey[0] === "posts" ||
+                        query.queryKey[0] === "comments"
+                    );
+                }
             });
 
             setLoading(false);
             onComplete();
 
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
             setErrorMessage("Неуспешен запис.");
             setLoading(false);

@@ -183,6 +183,7 @@ export const Navbar = () => {
             setAvatarUrl(finalAvatarUrl);
             setProfileModalOpen(false);
             showToast("Профилът е обновен!");
+            setTimeout(() => window.location.reload(), 1000);
 
         } catch (error: any) {
             showToast("Грешка: " + error.message, 'error');
